@@ -1,0 +1,97 @@
+{
+  "project_info": {
+    "project_number": "286711655085",
+    "project_id": "week-9-activity-b2f7c",
+    "storage_bucket": "week-9-activity-b2f7c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286711655085:android:5ca3cc954adff911803424",
+        "android_client_info": {
+          "package_name": "com.example.strm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "286711655085-v669am8ugm4smu7n3pf9d9kbv9sms4jl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgcmKf4H3Us1wRLw0_SoPUYH0KQ-ZDa1U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "286711655085-v669am8ugm4smu7n3pf9d9kbv9sms4jl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286711655085:android:218859561c5aea23803424",
+        "android_client_info": {
+          "package_name": "com.example.week_9_bantang"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "286711655085-v669am8ugm4smu7n3pf9d9kbv9sms4jl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgcmKf4H3Us1wRLw0_SoPUYH0KQ-ZDa1U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "286711655085-v669am8ugm4smu7n3pf9d9kbv9sms4jl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286711655085:android:368d8ab375434bdd803424",
+        "android_client_info": {
+          "package_name": "com.example.week_9_howard_tan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "286711655085-v669am8ugm4smu7n3pf9d9kbv9sms4jl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgcmKf4H3Us1wRLw0_SoPUYH0KQ-ZDa1U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "286711655085-v669am8ugm4smu7n3pf9d9kbv9sms4jl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
