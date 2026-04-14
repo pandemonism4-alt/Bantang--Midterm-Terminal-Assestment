@@ -47,63 +47,68 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Column(
-            children: [
-              const SizedBox(height: 80),
-              Container(
-                height: 100,
-                width: 100,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.purple.withOpacity(0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.bubble_chart_rounded, size: 50, color: Color(0xFF9181F4)),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('lib/images/carti.jpg'),
+                fit: BoxFit.cover,
               ),
-              const SizedBox(height: 40),
-              const Text(
-                'MindSpace',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF2D3142), letterSpacing: 1),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Organize your thoughts beautifully.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Color(0xFF9C9EB9)),
-              ),
-              const SizedBox(height: 60),
-              if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
-                ),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _buildInputField(_emailController, 'Email', Icons.email_outlined),
-                    const SizedBox(height: 20),
-                    _buildInputField(_passwordController, 'Password', Icons.lock_outline, isPassword: true),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 40),
-              _buildPrimaryButton(),
-              const SizedBox(height: 30),
-              _buildSecondaryButton(),
-            ],
+            ),
           ),
-        ),
+          Container(
+            color: Colors.black.withOpacity(0.6),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                children: [
+                  const SizedBox(height: 80),
+                  Container(
+                    height: 100,
+                    width: 100,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Image.asset(
+                      'lib/images/wlr gif.gif',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  const Text(
+                    'MindSpace',
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 2),
+                  ),
+                  const SizedBox(height: 60),
+                  if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold)),
+                    ),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        _buildInputField(_emailController, 'Email', Icons.email_outlined),
+                        const SizedBox(height: 20),
+                        _buildInputField(_passwordController, 'Password', Icons.lock_outline, isPassword: true),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  _buildPrimaryButton(),
+                  const SizedBox(height: 30),
+                  _buildSecondaryButton(),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -111,11 +116,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildInputField(TextEditingController controller, String label, IconData icon, {bool isPassword = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 5)),
-        ],
       ),
       child: TextFormField(
         controller: controller,
@@ -124,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: InputDecoration(
           hintText: label,
           hintStyle: const TextStyle(color: Color(0xFF9C9EB9), fontSize: 14),
-          prefixIcon: Icon(icon, color: const Color(0xFF9181F4), size: 20),
+          prefixIcon: Icon(icon, color: const Color(0xFF1976D2), size: 20),
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF9C9EB9), size: 18),
@@ -144,10 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
       height: 55,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF9181F4),
+          backgroundColor: const Color(0xFF1976D2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 5,
-          shadowColor: const Color(0xFF9181F4).withOpacity(0.4),
         ),
         onPressed: _isLoading ? null : _signIn,
         child: _isLoading
@@ -164,8 +164,8 @@ class _LoginScreenState extends State<LoginScreen> {
         text: const TextSpan(
           style: TextStyle(fontSize: 14),
           children: [
-            TextSpan(text: "New here? ", style: TextStyle(color: Color(0xFF9C9EB9))),
-            TextSpan(text: "Create account", style: TextStyle(color: Color(0xFF9181F4), fontWeight: FontWeight.bold)),
+            TextSpan(text: "New here? ", style: TextStyle(color: Colors.white70)),
+            TextSpan(text: "Create account", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ],
         ),
       ),

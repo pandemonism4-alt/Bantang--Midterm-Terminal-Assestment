@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/resource_model.dart';
+import '../services/api_service.dart';
 
 class ResourcesScreen extends StatefulWidget {
   const ResourcesScreen({super.key});
@@ -8,142 +9,189 @@ class ResourcesScreen extends StatefulWidget {
 }
 
 class _ResourcesScreenState extends State<ResourcesScreen> {
-  final List<Map<String, String>> _englishResources = [
-    {'title': 'The Power of Atomic Habits', 'category': 'Productivity'},
-    {'title': 'Mindfulness and Meditation Guide', 'category': 'Mental Health'},
-    {'title': 'Deep Work: Staying Focused', 'category': 'Focus'},
-    {'title': 'Digital Detox: 7 Day Challenge', 'category': 'Well-being'},
-    {'title': 'Time Management Mastery', 'category': 'Efficiency'},
-    {'title': 'Building Emotional Resilience', 'category': 'Psychology'},
-    {'title': 'The Art of Saying No', 'category': 'Self-care'},
-    {'title': 'Morning Routines for Success', 'category': 'Routine'},
-    {'title': 'Overcoming Procrastination', 'category': 'Motivation'},
-    {'title': 'Healthy Work-Life Balance', 'category': 'Lifestyle'},
-    {'title': 'The Science of Better Sleep', 'category': 'Health'},
-    {'title': 'Creative Thinking Techniques', 'category': 'Creativity'},
-    {'title': 'Effective Communication Skills', 'category': 'Growth'},
-    {'title': 'Goal Setting for the Future', 'category': 'Planning'},
-    {'title': 'Financial Mindset Basics', 'category': 'Finance'},
-  ];
-
-  bool _isLoading = true;
+  List<ResourceModel> _allResources = [];
+  bool _isLoading = false;
+  String _filter = 'All';
 
   @override
   void initState() {
     super.initState();
-    _simulateFetch();
+    _fetch();
   }
 
-  Future<void> _simulateFetch() async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) setState(() => _isLoading = false);
+  Future<void> _fetch() async {
+    setState(() => _isLoading = true);
+    try {
+      final data = await ApiService.instance.fetchResources(limit: 30);
+      if (mounted) {
+        setState(() {
+          _allResources = data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
+
+  List<ResourceModel> get _filteredResources {
+    if (_filter == 'Pending') {
+      return _allResources.where((r) => !r.completed).toList();
+    } else if (_filter == 'Done') {
+      return _allResources.where((r) => r.completed).toList();
+    }
+    return _allResources;
+  }
+
+  int get _pendingCount => _allResources.where((r) => !r.completed).length;
+  int get _doneCount => _allResources.where((r) => r.completed).length;
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF9181F4)),
-      );
-    }
+    return Scaffold(
+      backgroundColor: Colors.white.withOpacity(0.05), // Slightly transparent to show background
+      body: Column(
+        children: [
+          _buildHeader(),
+          _buildFilterTabs(),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF673AB7)))
+                : RefreshIndicator(
+                    onRefresh: _fetch,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      itemCount: _filteredResources.length,
+                      itemBuilder: (_, i) => _ResourceCard(resource: _filteredResources[i]),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        setState(() => _isLoading = true);
-        await _simulateFetch();
-      },
-      color: const Color(0xFF9181F4),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(20),
-        itemCount: _englishResources.length,
-        itemBuilder: (_, i) => _ResourceTile(
-          title: _englishResources[i]['title']!,
-          category: _englishResources[i]['category']!,
-          index: i + 1,
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      color: Colors.white.withOpacity(0.9),
+      child: Row(
+        children: [
+          const Icon(Icons.auto_fix_high, color: Color(0xFF673AB7), size: 16),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              'Live data from jsonplaceholder.typicode.com',
+              style: TextStyle(color: Color(0xFF673AB7), fontSize: 11, fontWeight: FontWeight.w500),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Color(0xFF673AB7), size: 16),
+            onPressed: _fetch,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTabs() {
+    return Container(
+      color: Colors.white.withOpacity(0.9),
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 16),
+            _filterChip('All (${_allResources.length})', 'All'),
+            const SizedBox(width: 12),
+            _filterChip('Pending ($_pendingCount)', 'Pending'),
+            const SizedBox(width: 12),
+            _filterChip('Done ($_doneCount)', 'Done'),
+            const SizedBox(width: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _filterChip(String label, String value) {
+    final isSelected = _filter == value;
+    return GestureDetector(
+      onTap: () => setState(() => _filter = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1976D2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? Colors.transparent : Colors.grey[300]!),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[600],
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );
   }
 }
 
-class _ResourceTile extends StatelessWidget {
-  final String title;
-  final String category;
-  final int index;
-  const _ResourceTile({required this.title, required this.category, required this.index});
+class _ResourceCard extends StatelessWidget {
+  final ResourceModel resource;
+  const _ResourceCard({required this.resource});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: resource.completed ? const Color(0xFFE8F5E9).withOpacity(0.9) : Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 22,
+            height: 22,
             decoration: BoxDecoration(
-              color: const Color(0xFF9181F4).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey[300]!),
+              color: resource.completed ? Colors.green : Colors.transparent,
             ),
-            child: const Icon(Icons.menu_book_rounded, color: Color(0xFF9181F4), size: 22),
+            child: resource.completed
+                ? const Icon(Icons.check, size: 14, color: Colors.white)
+                : null,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2D3142),
+                  resource.title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                    decoration: resource.completed ? TextDecoration.lineThrough : null,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF9181F4).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        category,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF9181F4),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '5 min read',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 2),
+                Text(
+                  'User #${resource.userId}  ·  Task #${resource.id}',
+                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFE0E0E0), size: 14),
         ],
       ),
     );

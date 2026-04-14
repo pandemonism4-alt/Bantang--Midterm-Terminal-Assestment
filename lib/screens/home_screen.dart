@@ -54,16 +54,35 @@ class _HomeScreenState extends State<HomeScreen> {
     if (user == null) return;
 
     final isOnline = await ConnectivityService.instance.isConnected;
-    if (!isOnline) return;
+    if (!isOnline) {
+      if (!silent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No internet connection'), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
 
     setState(() => _isSyncing = true);
     try {
       final count = await SyncService.instance.syncPendingTasks(user.uid);
-      if (count > 0 && mounted) {
-        _tasksKey.currentState?.loadTasks();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$count tasks synced to cloud'), backgroundColor: Colors.green),
-        );
+      if (mounted) {
+        if (count > 0) {
+          _tasksKey.currentState?.loadTasks();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$count tasks synced to cloud'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else if (!silent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Everything is already synced!'),
+              backgroundColor: Color(0xFF2E7D32),
+            ),
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => _isSyncing = false);
@@ -72,23 +91,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = AuthService.instance.currentUser;
+    final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
+            const Icon(Icons.bubble_chart_rounded, color: Colors.white, size: 24),
+            const SizedBox(width: 12),
             const Text(
               'MindSpace',
-              style: TextStyle(color: Color(0xFF2D3142), fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22, letterSpacing: 1.5),
             ),
-            if (!_isOnline)
-              const Text(
-                'No Internet connection',
-                style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold),
-              ),
           ],
         ),
         actions: [
@@ -96,68 +114,140 @@ class _HomeScreenState extends State<HomeScreen> {
             const Center(
               child: Padding(
                 padding: EdgeInsets.only(right: 16),
-                child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF9181F4))),
+                child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
               ),
             )
-          else if (_isOnline)
+          else
             IconButton(
-              icon: const Icon(Icons.sync_rounded, color: Color(0xFF9181F4)),
+              icon: const Icon(Icons.sync_rounded, color: Colors.white),
               onPressed: () => _syncTasks(),
             ),
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Color(0xFF9181F4)),
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
             onPressed: () => AuthService.instance.signOut(),
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          if (!_isOnline)
-            Container(
-              width: double.infinity,
-              color: Colors.redAccent,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: const Text(
-                'Working Offline',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('lib/images/carti.jpg'),
+                fit: BoxFit.cover,
               ),
             ),
-          Expanded(child: _screens[_currentIndex]),
+          ),
+          Container(color: Colors.black.withOpacity(0.75)),
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!_isOnline)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.redAccent.withOpacity(0.8),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: const Text(
+                      'OFFLINE MODE',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hi, $userName',
+                        style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                      ),
+                      const Text(
+                        'Here\'s Your Tasks',
+                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                _buildTaskStatusScroll(),
+                Expanded(child: _screens[_currentIndex]),
+              ],
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, -5)),
+            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -5)),
           ],
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF9181F4),
-          unselectedItemColor: const Color(0xFF9C9EB9),
+          backgroundColor: Colors.transparent,
+          selectedItemColor: const Color(0xFFFF3B5C),
+          unselectedItemColor: const Color(0xFF757575),
           showSelectedLabels: true,
-          showUnselectedLabels: false,
+          showUnselectedLabels: true,
           elevation: 0,
           type: BottomNavigationBarType.fixed,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.description_outlined), label: 'Drafts'),
+            BottomNavigationBarItem(icon: Icon(Icons.edit_document), label: 'Drafts'),
             BottomNavigationBarItem(icon: Icon(Icons.cloud_outlined), label: 'Cloud'),
-            BottomNavigationBarItem(icon: Icon(Icons.explore_outlined), label: 'Discover'),
+            BottomNavigationBarItem(icon: Icon(Icons.public), label: 'Resources'),
           ],
         ),
       ),
       floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton(
+          ? FloatingActionButton.extended(
               onPressed: () => _showAddTaskDialog(context),
-              backgroundColor: const Color(0xFF9181F4),
-              child: const Icon(Icons.add, color: Colors.white),
+              backgroundColor: const Color(0xFFFF3B5C),
+              icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+              label: const Text('Create New Task', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             )
           : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  Widget _buildTaskStatusScroll() {
+    return Container(
+      height: 100,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        children: [
+          _buildStatusCard('Plan', Icons.edit_note_rounded, const Color(0xFFFF3B5C)),
+          _buildStatusCard('On Going', Icons.timer_outlined, const Color(0xFF9181F4)),
+          _buildStatusCard('Finish', Icons.check_circle_outline_rounded, Colors.greenAccent),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusCard(String title, IconData icon, Color color) {
+    return Container(
+      width: 100,
+      margin: const EdgeInsets.only(right: 15),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 
@@ -204,13 +294,13 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'New Draft Task',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+              'NEW TASK ENTRY',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFF3B5C), letterSpacing: 1),
             ),
             const SizedBox(height: 20),
-            _buildField(_titleController, 'Title', Icons.title_rounded),
+            _buildField(_titleController, 'Task Subject', Icons.subject_rounded),
             const SizedBox(height: 16),
-            _buildField(_descController, 'Description', Icons.description_outlined, maxLines: 3),
+            _buildField(_descController, 'Detailed Description', Icons.notes_rounded, maxLines: 3),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -227,11 +317,11 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF9181F4),
+                  backgroundColor: const Color(0xFFFF3B5C),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 onPressed: _save,
-                child: const Text('Save Draft', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text('SUBMIT DRAFT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
               ),
             ),
           ],
@@ -251,7 +341,8 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
         maxLines: maxLines,
         decoration: InputDecoration(
           hintText: label,
-          prefixIcon: Icon(icon, color: const Color(0xFF9181F4)),
+          hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+          prefixIcon: Icon(icon, color: const Color(0xFFFF3B5C)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
@@ -273,7 +364,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           p.toUpperCase(),
           style: TextStyle(
             color: isSelected ? Colors.white : color,
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -295,7 +386,6 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       createdAt: DateTime.now(),
     );
 
-    // Save locally first as a "Draft"
     final localId = await DatabaseHelper.instance.insertTask(taskToInitial);
 
     if (isOnline) {

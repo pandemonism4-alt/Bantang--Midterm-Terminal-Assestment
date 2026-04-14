@@ -52,56 +52,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2D3142), size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Join MindSpace',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('lib/images/carti.jpg'),
+                fit: BoxFit.cover,
               ),
-              const SizedBox(height: 10),
-              const Text(
-                'Create an account to start your journey.',
-                style: TextStyle(fontSize: 14, color: Color(0xFF9C9EB9)),
-              ),
-              const SizedBox(height: 40),
-              if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
-                ),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _buildInputField(_nameController, 'Full Name', Icons.person_outline),
-                    const SizedBox(height: 16),
-                    _buildInputField(_emailController, 'Email', Icons.email_outlined),
-                    const SizedBox(height: 16),
-                    _buildInputField(_passwordController, 'Password', Icons.lock_outline, isPassword: true),
-                    const SizedBox(height: 16),
-                    _buildInputField(_confirmController, 'Confirm Password', Icons.shield_outlined, isPassword: true),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 40),
-              _buildRegisterButton(),
-              const SizedBox(height: 30),
-            ],
+            ),
           ),
-        ),
+          Container(
+            color: Colors.black.withOpacity(0.6),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Join MindSpace',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Create an account to start your journey.',
+                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                  ),
+                  const SizedBox(height: 40),
+                  if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold)),
+                    ),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        _buildInputField(_nameController, 'Full Name', Icons.person_outline),
+                        const SizedBox(height: 16),
+                        _buildInputField(_emailController, 'Email', Icons.email_outlined),
+                        const SizedBox(height: 16),
+                        _buildInputField(_passwordController, 'Password', Icons.lock_outline, isPassword: true),
+                        const SizedBox(height: 16),
+                        _buildInputField(_confirmController, 'Confirm Password', Icons.shield_outlined, isPassword: true),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  _buildRegisterButton(),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -109,11 +120,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildInputField(TextEditingController controller, String label, IconData icon, {bool isPassword = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 5)),
-        ],
       ),
       child: TextFormField(
         controller: controller,
@@ -122,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         decoration: InputDecoration(
           hintText: label,
           hintStyle: const TextStyle(color: Color(0xFF9C9EB9), fontSize: 14),
-          prefixIcon: Icon(icon, color: const Color(0xFF9181F4), size: 20),
+          prefixIcon: Icon(icon, color: const Color(0xFF1976D2), size: 20),
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF9C9EB9), size: 18),
@@ -142,10 +150,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       height: 55,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF9181F4),
+          backgroundColor: const Color(0xFF1976D2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 5,
-          shadowColor: const Color(0xFF9181F4).withOpacity(0.4),
         ),
         onPressed: _isLoading ? null : _register,
         child: _isLoading
