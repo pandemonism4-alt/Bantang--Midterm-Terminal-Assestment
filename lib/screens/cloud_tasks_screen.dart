@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/task_model.dart';
 import '../services/sync_service.dart';
+import '../services/firestore_service.dart';
 
 class CloudTasksScreen extends StatelessWidget {
   final String userId;
@@ -12,7 +13,7 @@ class CloudTasksScreen extends StatelessWidget {
       stream: SyncService.instance.streamCloudTasks(userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF9181F4)));
+          return const Center(child: CircularProgressIndicator(color: Colors.white));
         }
 
         if (snapshot.hasError) {
@@ -49,18 +50,15 @@ class CloudTasksScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.white.withOpacity(0.1),
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10)),
-              ],
             ),
-            child: Icon(icon, size: 64, color: const Color(0xFF9181F4).withOpacity(0.4)),
+            child: Icon(icon, size: 64, color: Colors.white),
           ),
           const SizedBox(height: 24),
           Text(
             title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 8),
           Padding(
@@ -68,7 +66,7 @@ class CloudTasksScreen extends StatelessWidget {
             child: Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: Color(0xFF9C9EB9), height: 1.5),
+              style: const TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
             ),
           ),
         ],
@@ -94,9 +92,8 @@ class _CloudTaskCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF9181F4).withOpacity(0.1)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
@@ -130,9 +127,22 @@ class _CloudTaskCard extends StatelessWidget {
               style: const TextStyle(color: Color(0xFF9C9EB9), fontSize: 13),
             ),
             const SizedBox(height: 8),
-            Text(
-              'ID: ${task.firestoreId ?? "N/A"}',
-              style: TextStyle(fontSize: 10, color: Colors.grey[400], fontFamily: 'monospace'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'ID: ${task.firestoreId ?? "N/A"}',
+                  style: TextStyle(fontSize: 10, color: Colors.grey[400], fontFamily: 'monospace'),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    if (task.firestoreId != null) {
+                      await FirestoreService().deleteTask(task.firestoreId!);
+                    }
+                  },
+                  child: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                ),
+              ],
             ),
           ],
         ),
